@@ -1,0 +1,33 @@
+{
+  "mode": "single",
+  "single_arm": {
+    "follower_port": "/dev/cu.usbmodem5B140324161",
+    "leader_port": "/dev/cu.usbmodem5B141109241",
+    "follower_id": "single_hand",
+    "leader_id": "one_hand_leader",
+    "cameras": [
+      {
+        "index": 0,
+        "name": "front_cam",
+        "width": 640,
+        "height": 480,
+        "fps": 30
+      }
+    ]
+  },
+  "bimanual": {
+    "left_follower_port": null,
+    "left_leader_port": null,
+    "right_follower_port": null,
+    "right_leader_port": null,
+    "follower_id": null,
+    "leader_id": null,
+    "cameras": []
+  },
+  "last_recording": {
+    "repo_id": "maria1211/makermods_Bread1",
+    "task": "Pick up a bread",
+    "num_episodes": 10,
+    "episode_time_s": 30
+  }
+}

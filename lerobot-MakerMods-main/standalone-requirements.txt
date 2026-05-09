@@ -1,0 +1,24 @@
+# Standalone distribution — all dependencies bundled (lerobot + neuracore included)
+
+# Web framework and server
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+websockets>=10.0
+
+# Camera discovery and preview (headless = no GUI; use opencv-python if you need display)
+opencv-python-headless>=4.5.0
+
+# Hugging Face Hub (datasets, repo creation)
+huggingface_hub>=0.20.0
+
+# Direct servo motor diagnostics (debug page)
+feetech-servo-sdk>=1.0.0
+
+# Qualia Studios SDK (cloud-based policy training)
+qualia-sdk
+
+# Smolvla policy
+lerobot[transformers-dep]
+num2words>=0.5.14
+accelerate>=1.7.0
+safetensors>=0.4.3
