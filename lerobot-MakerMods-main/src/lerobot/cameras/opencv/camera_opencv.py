@@ -223,7 +223,10 @@ class OpenCVCamera(Camera):
         actual_fps = self.videocapture.get(cv2.CAP_PROP_FPS)
         # Use math.isclose for robust float comparison
         if not success or not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
-            raise RuntimeError(f"{self} failed to set fps={self.fps} ({actual_fps=}).")
+            logger.warning(
+                f"{self} failed to set exact fps={self.fps} ({actual_fps=}). "
+                f"The camera may still function but at a different frame rate."
+            )
 
     def _validate_width_and_height(self) -> None:
         """Validates and sets the camera's frame capture width and height."""
@@ -233,14 +236,16 @@ class OpenCVCamera(Camera):
 
         actual_width = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_WIDTH)))
         if not width_success or self.capture_width != actual_width:
-            raise RuntimeError(
-                f"{self} failed to set capture_width={self.capture_width} ({actual_width=}, {width_success=})."
+            logger.warning(
+                f"{self} failed to set exact capture_width={self.capture_width} ({actual_width=}). "
+                f"Frames will be resized in software."
             )
 
         actual_height = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         if not height_success or self.capture_height != actual_height:
-            raise RuntimeError(
-                f"{self} failed to set capture_height={self.capture_height} ({actual_height=}, {height_success=})."
+            logger.warning(
+                f"{self} failed to set exact capture_height={self.capture_height} ({actual_height=}). "
+                f"Frames will be resized in software."
             )
 
     @staticmethod
@@ -356,9 +361,7 @@ class OpenCVCamera(Camera):
         h, w, c = image.shape
 
         if h != self.capture_height or w != self.capture_width:
-            raise RuntimeError(
-                f"{self} frame width={w} or height={h} do not match configured width={self.capture_width} or height={self.capture_height}."
-            )
+            image = cv2.resize(image, (self.capture_width, self.capture_height), interpolation=cv2.INTER_AREA)
 
         if c != 3:
             raise RuntimeError(f"{self} frame channels={c} do not match expected 3 channels (RGB/BGR).")
@@ -419,7 +422,6 @@ class OpenCVCamera(Camera):
         self.thread = None
         self.stop_event = None
 
-    #def async_read(self, timeout_ms: float = 200) -> np.ndarray:
     def async_read(self, timeout_ms: float = 3000) -> np.ndarray:
         """
         Reads the latest available frame asynchronously.

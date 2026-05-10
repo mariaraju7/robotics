@@ -185,8 +185,18 @@ def _camera_worker(index: int, queue: mp.Queue, stop_event: mp.Event) -> None:
     """Capture frames in a separate process to avoid macOS AVFoundation cache."""
     import cv2
     import time
+    import signal
+    import sys
 
     cap = cv2.VideoCapture(index)
+    
+    def handle_sigterm(signum, frame):
+        if cap.isOpened():
+            cap.release()
+        sys.exit(0)
+        
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
     if not cap.isOpened():
         # Camera unavailable (e.g. held by teleoperation subprocess) — exit cleanly
         return
@@ -271,12 +281,15 @@ class _CameraStream:
         self._process = None
         
         if process is not None:
-            # Give the process a brief moment to exit cleanly, then kill it.
-            # Use a short timeout (0.5s) to avoid blocking threads/event loop.
-            process.join(timeout=0.5)
+            # Give the process more time to exit cleanly so OpenCV can release cameras.
+            # If we kill it abruptly, macOS AVFoundation may leave the camera locked.
+            process.join(timeout=2.0)
             if process.is_alive():
-                process.kill()
-                process.join(timeout=1)
+                process.terminate()
+                process.join(timeout=1.0)
+                if process.is_alive():
+                    process.kill()
+                    process.join(timeout=1.0)
         self._frame = None
 
     @property
